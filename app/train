@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 ## ---- Initialising libraries ----
-library(ggplot2)
+# library(ggplot2)
 library(tibble)
 library(tidyr)
 library(readr)

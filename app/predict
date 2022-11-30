@@ -2,7 +2,7 @@
 
 ## ---- Initialising libraries ----
 print("Initialising libraries..")
-library(ggplot2)
+# library(ggplot2)
 library(tibble)
 library(tidyr)
 library(readr)
@@ -10,7 +10,6 @@ library(purrr)
 library(dplyr)
 library(stringr)
 library(lubridate)
-library(plotly)
 library(glue)
 library(zeallot)
 library(pROC)
