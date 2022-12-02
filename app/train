@@ -205,5 +205,9 @@ tryCatch(
     print("Error!")
     write(e %>% as.character(), file = "/opt/ml_vol/outputs/errors/train_failure.txt", append =
             FALSE)
+    
+    quit(status=1)
   }
 )
+
+quit(status=0)
