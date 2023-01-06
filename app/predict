@@ -24,91 +24,44 @@ options(dplyr.summarise.inform = FALSE)
 source('algorithm/0.common_funcs.R')
 
 
-# Get the training data file
-print("Get the testing data file..")
-data   <-
-  glue(
-    '/opt/ml_vol/inputs/data/testing/regressionBaseMainInput/',
-    list.files(path = "/opt/ml_vol/inputs/data/testing/regressionBaseMainInput")
-  )
+model_path <- '/opt/ml_vol/model/artifacts/model.rds'
+data_path <- '/opt/ml_vol/inputs/data/testing/regressionBaseMainInput/'
+prediction_path <- '/opt/ml_vol/outputs/testing_outputs/test_predictions.csv'
+predict_failure_path <- "/opt/ml_vol/outputs/errors/test_failure.txt"
+
+
+get_data <- function() 
+{
+  f_path <- glue( data_path, list.files(path = data_path) )
+  df_test <- read_csv(  
+      f_path <- glue( data_path, list.files(path = data_path) )
+    ) 
+  return(df_test)
+}
+
+get_model <- function() 
+{
+  return(read_rds(model_path))
+}
 
 
 
-tester <- function(data_path)
+save_predictions <- function(predictions)
+{
+  predictions %>% write.csv( prediction_path, row.names=FALSE )
+}
+
+
+tester <- function()
 {
   ## Load model and test data
-  print("Load model and test data..")
-  trained_model         <-
-    read_rds(
-      '/opt/ml_vol/model/artifacts/model.rds'
-    )
-  variables_to_encode   <- trained_model$variables_to_encode
-  id_column             <- trained_model$id_column
-  exp_vars              <- trained_model$exp_vars
-  encodings             <- trained_model$encodings
-  variables_numeric     <- trained_model$variables_numeric
-  df_test             <- read_csv(data_path)
-  
-  
-  id <- df_test %>% select(id_column)
-  
-  
-  
-  print("setting up test data..")
-  df_test[variables_to_encode] <-
-    sapply(df_test[variables_to_encode], as.character)
-  df_test[variables_numeric]   <-
-    sapply(df_test[variables_numeric], as.numeric)
-  
-  
-  full_data_numeric <- df_test %>%
-    select(-id_column, -variables_to_encode)
-  full_data_numeric <- as.data.frame(scale(full_data_numeric))
-  
-  
-  
-  print("Encoding test data..")
-  if (length(variables_to_encode) != 0)
-  {
-    full_data_categorical <-
-      df_test  %>% select(variables_to_encode) %>%
-      mutate(across(everything(), ~ replace_na(.x, calc_mode(.x))))
-    
-    for (i in variables_to_encode) {
-      #define original categorical labels
-      encoding <- encodings[[i]]
-      #convert labels to numeric values
-      full_data_categorical[[i]] = transform(encoding, full_data_categorical[[i]])
-    }
-    df_test <-
-      cbind(id, full_data_numeric, full_data_categorical)
-    
-  } else{
-    df_test <-
-      cbind(id, full_data_numeric)
-    
-  }
-
-  
-  print("Getting the model..")
-  model <- trained_model$mdl
-  
-  ## Getting probability of each row for the target_class  
-  print("Making predictions..")
-  test_results <-
-    tester_func(mdl = model,
-                test_set = df_test)
-  
-  test_results <- test_results$test_predictions
-  
-  ## Saving ids with prediction
-  
-  print("Saving predictions...")
-  predictions <- cbind(id, test_results)
-  predictions %>% write.csv(
-    '/opt/ml_vol/outputs/testing_outputs/test_predictions.csv', row.names=FALSE
-  )
+  print("Starting predictions ..")
+  trained_model         <-  get_model()
+  df_test               <-  get_data()
+  predictions           <-  get_predictions(trained_model, df_test)
+  save_predictions(predictions)   
   print("predictions done")
+  return("predictions successful!")
 }
 
 
@@ -116,12 +69,12 @@ tester <- function(data_path)
 tryCatch(
   # Specifying expression
   expr = {
-    tester(data)
+    tester()
   },
   # Specifying error message
   error = function(e) {
     print("Prediction Error!")
-    write(e %>% as.character(), file = "/opt/ml_vol/outputs/errors/test_failure.txt", append =
+    write(e %>% as.character(), file = predict_failure_path, append =
             FALSE)
     quit(status=1)
   }

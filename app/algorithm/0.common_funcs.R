@@ -103,32 +103,86 @@ ohe_encoder <- function(df) {
 
 
 
-tester_func <- function(mdl, test_set) {
-  test_features <- test_set %>% select(all_of(mdl$feature_names))
-  test_predictions <- predict(mdl, data.matrix(test_features))
+# tester_func <- function(mdl, test_set) {
+#   test_features <- test_set %>% select(all_of(mdl$feature_names))
+#   test_predictions <- predict(mdl, data.matrix(test_features))
   
-  results <- list()
-  results[['test_predictions']] <-
-    tibble(prediction = test_predictions)
+#   results <- list()
+#   results[['test_predictions']] <-
+#     tibble(prediction = test_predictions)
   
-  results
+#   results
   
-  
-  
-}
+# }
 
 
 ## *************************
 
 
+get_predictions <- function(trained_model, df_test) 
+{
 
+  ## various variables
+  variables_to_encode   <- trained_model$variables_to_encode
+  id_column             <- trained_model$id_column
+  exp_vars              <- trained_model$exp_vars
+  encodings             <- trained_model$encodings
+  variables_numeric     <- trained_model$variables_numeric
+  scale_func            <- trained_model$scale_func
+  
+  print(encodings)
 
+  id <- df_test %>% select(id_column)  
+  
+  print("setting up test data..")
+  df_test[variables_to_encode] <-
+    sapply(df_test[variables_to_encode], as.character)
+  df_test[variables_numeric]   <-
+    sapply(df_test[variables_numeric], as.numeric)
+    
+  full_data_numeric <- df_test %>%
+    select(-id_column, -variables_to_encode)
 
+  full_data_numeric <- predict(scale_func, as.data.frame(full_data_numeric))
+  
+    
+  print("Encoding test data..")
+  if (length(variables_to_encode) != 0)
+  {
+    full_data_categorical <-
+      df_test  %>% select(variables_to_encode) %>%
+      mutate(across(everything(), ~ replace_na(.x, calc_mode(.x))))
+    
+    for (i in variables_to_encode) {
+      full_data_categorical[[i]] = transform(encodings[[i]], full_data_categorical[[i]])
+    }
+    df_test <-
+      cbind(id, full_data_numeric, full_data_categorical)
+    
+  } else{
+    df_test <-
+      cbind(id, full_data_numeric)
+    
+  }  
 
+  print("Getting the model..")
+  model <- trained_model$mdl
+  
+  ## Getting probability of each row for the target_class  
+  print("Making predictions..")
+  prediction_features <- df_test %>% select(all_of(model$feature_names))
 
+  predictions <- predict(model, data.matrix(prediction_features))
+  
+  results <- list()
+  results[['predictions']] <-
+    tibble(prediction = predictions)
+    
+  predictions <- results$predictions
+  predictions <- cbind(id, predictions)
 
-
-
+  predictions
+}
 
 
 

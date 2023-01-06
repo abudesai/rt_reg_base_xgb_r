@@ -29,6 +29,6 @@ RUN chmod +x train
 RUN chmod +x predict
 RUN chmod +x serve
 
-# USER 1001
+USER 1000
 
 

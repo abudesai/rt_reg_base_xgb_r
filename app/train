@@ -17,6 +17,7 @@ library(rjson)
 library(caTools)
 library(imputeTS)
 library(CatEncoders)
+library(caret)
 
 options(dplyr.summarise.inform = FALSE)
 
@@ -118,7 +119,11 @@ trainer <- function(schema_path, data_path)
   full_data_numeric <-
     full_data %>% select(variables_numeric) %>% na_mean(option = "mean")
   
-  full_data_numeric <- as.data.frame(scale(full_data_numeric))
+
+  # full_data_numeric <- as.data.frame(scale(full_data_numeric))
+
+  scale_func <- preProcess(as.data.frame(full_data_numeric), method=c("range"))
+  full_data_numeric <- predict(scale_func, as.data.frame(full_data_numeric))
   
   encodings <- list()
   
@@ -190,6 +195,8 @@ trainer <- function(schema_path, data_path)
   trained_model$variables_to_encode <- variables_to_encode
   trained_model$encodings <- encodings
   trained_model$variables_numeric <- variables_numeric
+  trained_model$full_data_numeric <- full_data_numeric
+  trained_model$scale_func <- scale_func
   print("Saving model..")
   trained_model %>% write_rds('/opt/ml_vol/model/artifacts/model.rds')
   print("Training done")
@@ -203,6 +210,7 @@ tryCatch(
   # Specifying error message
   error = function(e) {
     print("Error!")
+    print(e)
     write(e %>% as.character(), file = "/opt/ml_vol/outputs/errors/train_failure.txt", append =
             FALSE)
     
