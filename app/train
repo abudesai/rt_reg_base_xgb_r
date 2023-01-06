@@ -120,15 +120,12 @@ trainer <- function(schema_path, data_path)
     full_data %>% select(variables_numeric) %>% na_mean(option = "mean")
   
 
-  # full_data_numeric <- as.data.frame(scale(full_data_numeric))
-
   scale_func <- preProcess(as.data.frame(full_data_numeric), method=c("range"))
   full_data_numeric <- predict(scale_func, as.data.frame(full_data_numeric))
   
   encodings <- list()
   
-  
-  
+    
   ## Encoding categorical variables
   print("feature encoding..")
   if (length(variables_to_encode) != 0)

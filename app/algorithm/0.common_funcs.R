@@ -16,9 +16,6 @@ options(dplyr.summarise.inform = FALSE)
 
 
 
-
-
-
 trainer_func <- function(train_set,
                          validation_set,
                          explanatory_variables,
@@ -90,8 +87,6 @@ trainer_func <- function(train_set,
   
   return(stuff)
   
-  
-  
 }
 
 
@@ -100,23 +95,6 @@ ohe_encoder <- function(df) {
   dummy
 }
 
-
-
-
-# tester_func <- function(mdl, test_set) {
-#   test_features <- test_set %>% select(all_of(mdl$feature_names))
-#   test_predictions <- predict(mdl, data.matrix(test_features))
-  
-#   results <- list()
-#   results[['test_predictions']] <-
-#     tibble(prediction = test_predictions)
-  
-#   results
-  
-# }
-
-
-## *************************
 
 
 get_predictions <- function(trained_model, df_test) 
@@ -183,7 +161,6 @@ get_predictions <- function(trained_model, df_test)
 
   predictions
 }
-
 
 
 
