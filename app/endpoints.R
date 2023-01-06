@@ -16,10 +16,7 @@ id_column             <- trained_model$id_column
 exp_vars              <- trained_model$exp_vars
 encodings             <- trained_model$encodings
 variables_numeric     <- trained_model$variables_numeric
-
 id_column             <- trained_model$id_column
-full_data_numeric     <- trained_model$full_data_numeric
-
 
 
 
@@ -35,17 +32,20 @@ function(req) {
   
   ## if we do NOT have all we need...
   if (!all(necessary_params %in% names(inference_data))) {
-    result$prediction <- 0
-    result$warnings <- 'Some necessary features are missing'
+    list(
+      "prediction" = 0,
+      "warnings" = 'Some necessary features are missing'
+    )    
     
   } else {
     
     ## if any of the necessary parameters are null...
     if (inference_data %>% sapply(is.null) %>% any()) {
-      result$prediction <- 0
-      result$warnings <-
-        paste('The following required parameters were NULL:',
-              null_parameters)
+
+      list(
+        "prediction" = 0,
+        "warnings" = paste('The following required parameters were NULL:', null_parameters)
+      )      
       
     } else {
       predictions = get_predictions(trained_model, inference_data)      

@@ -1,6 +1,5 @@
 
 
-
 library(tidyverse)
 library(lubridate)
 library(data.table)
@@ -90,13 +89,6 @@ trainer_func <- function(train_set,
 }
 
 
-ohe_encoder <- function(df) {
-  dummy <- dummyVars(" ~ .", data = df)
-  dummy
-}
-
-
-
 get_predictions <- function(trained_model, df_test) 
 {
 
@@ -108,6 +100,7 @@ get_predictions <- function(trained_model, df_test)
   variables_numeric     <- trained_model$variables_numeric
   scale_func            <- trained_model$scale_func
   
+  # keep this line!!! weird bug in R. code doesnt work without this print! 
   print(encodings)
 
   id <- df_test %>% select(id_column)  
